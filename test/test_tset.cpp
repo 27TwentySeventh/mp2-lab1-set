@@ -333,7 +333,7 @@ TEST(TSet, chain_intersection_and_empty_complement) {
 
 
 TEST(TSet, sample_prime_numbers) {
-  int n, m, k, count;
+  int n, m, k;
   n = 30;
   TSet s(n + 1);
   // заполнение множества
