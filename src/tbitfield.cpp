@@ -7,10 +7,6 @@
 
 #include "tbitfield.h"
 
-// Fake variables used as placeholders in tests
-static const int FAKE_INT = -1;
-static TBitField FAKE_BITFIELD(1);
-
 TBitField::TBitField(int len)
 {
     if (len < 0)
@@ -112,20 +108,21 @@ int TBitField::GetBit(const int n) const // получить значение б
 
 TBitField& TBitField::operator=(const TBitField &bf) // присваивание
 {
-    if (*this == bf)
+    if (this == &bf)
         return *this;
-    BitLen = bf.BitLen;
     if (MemLen == bf.MemLen) {
         for (int i = 0; i<MemLen; i++)
             pMem[i] = bf.pMem[i];
     }
     else {
-        MemLen = bf.MemLen;
+        TELEM *newMem = new TELEM[bf.MemLen];
+        for (int i = 0; i < bf.MemLen; i++)
+            newMem[i] = bf.pMem[i];
         delete[] pMem;
-        pMem = new TELEM[MemLen];
-        for (int i = 0; i<MemLen; i++)
-            pMem[i] = bf.pMem[i];
+        pMem = newMem;
+        MemLen = bf.MemLen;
     }
+    BitLen = bf.BitLen;
     return *this;
 }
 
@@ -185,10 +182,24 @@ TBitField TBitField::operator~(void) // отрицание
 
 istream &operator>>(istream &istr, TBitField &bf) // ввод
 {
+    TBitField result(bf.BitLen);
+    for (int i = 0; i < bf.BitLen; ++i)
+    {
+        char ch;
+        if (!(istr >> ch)) return istr;
+        if (ch != '0' && ch != '1')
+        {
+            istr.setstate(ios::failbit);
+            return istr;
+        }
+        if (ch == '1') result.SetBit(i);
+    }
+    bf = result;
     return istr;
 }
 
 ostream &operator<<(ostream &ostr, const TBitField &bf) // вывод
 {
+    for (int i = 0; i < bf.BitLen; ++i) ostr << bf.GetBit(i);
     return ostr;
 }
